@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project hosted on Vercel. See [`demo`](https://whatsapp.vercel.app/).
+This is a [Next.js](https://nextjs.org/) project hosted on Vercel. See [`demo`](https://whatsapp-kohl-two.vercel.app/).
 
 ## Getting Started
 
