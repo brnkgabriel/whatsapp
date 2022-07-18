@@ -7,7 +7,7 @@ import * as EmailValidator from "email-validator"
 import { auth, db, addDoc, collection, getDoc, where, query } from "../fb"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { useCollection } from "react-firebase-hooks/firestore"
-import ChatComponent from "./Chat"
+import ChatComponent from "./ChatComponent"
 
 function Sidebar() {
   const [ user ] = useAuthState(auth)
@@ -42,7 +42,7 @@ function Sidebar() {
   return (
     <Container>
       <Header>
-        <UserAvatar onClick={() => auth.signOut()} />
+        <UserAvatar src={user.photoURL} onClick={() => auth.signOut()} />
         <IconsContainer>
           <IconButton>
             <Chat />
@@ -61,7 +61,7 @@ function Sidebar() {
 
       {/* List of chat */}
       { chatsSnapshot?.docs.map(chat => (
-        <ChatComponent key={chat.id} id={chat.id} user={chat.data().users} />
+        <ChatComponent key={chat.id} id={chat.id} users={chat.data().users} />
       )) }
     </Container>
   )

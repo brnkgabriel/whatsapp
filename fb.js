@@ -3,8 +3,9 @@ import {
   getFirestore,
   doc, setDoc,
   getDoc, collection,
-  serverTimestamp,
-  addDoc, where, query
+  serverTimestamp, orderBy,
+  addDoc, where, query,
+  getDocs
 } from "firebase/firestore"
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { initializeApp } from "firebase/app"
@@ -29,6 +30,10 @@ const auth = getAuth(app)
 const provider = new GoogleAuthProvider()
 
 export {
-  db, doc, setDoc, getDoc, serverTimestamp, addDoc, collection, where, query,
-  auth, provider, signInWithPopup, GoogleAuthProvider
+  db, doc, setDoc, getDoc,
+  serverTimestamp, addDoc,
+  collection, where, query,
+  orderBy, getDocs,
+  auth, provider, signInWithPopup,
+  GoogleAuthProvider
 }

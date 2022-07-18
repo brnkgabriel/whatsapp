@@ -1,0 +1,1 @@
+- when complete, change email of chats to user.displayName
