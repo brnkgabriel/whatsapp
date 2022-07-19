@@ -10,15 +10,20 @@ import {
   orderBy,
   setDoc,
   serverTimestamp,
-  addDoc
+  addDoc,
+  where
 } from "../fb"
 import { useRouter } from "next/router"
 import { Avatar, IconButton, Button } from "@mui/material"
 import { MoreVertRounded, AttachFile, InsertEmoticon, KeyboardVoice } from "@mui/icons-material"
 import { useState } from "react"
 import Message from "./Message"
+import getRecipientEmail from "../utils/getRecipientEmail"
+import TimeAgo from "timeago-react"
+import { useRef } from "react"
 
 function ChatScreen({ chat, messages }) {
+  const endOfMessagesRef = useRef(null)
   const [ user ] = useAuthState(auth)
   const [input, setInput] = useState("")
   const router = useRouter()
@@ -27,17 +32,22 @@ function ChatScreen({ chat, messages }) {
   const q = query(chatsRef, orderBy("timestamp", "asc"))
   const [ messagesSnapshot ] = useCollection(q)
 
+  const recipRef = collection(db, "users")
+  const q2 = query(recipRef, where("email", "==", getRecipientEmail(chat.users, user.email)))
+
+  const [ recipientSnapshot ] = useCollection(q2)
+
   const showMessages = () => {
     if (messagesSnapshot) {
       return messagesSnapshot.docs.map(message => (
         <Message
-        key={message.id}
-        user={message.data().user}
-        message={{
-          ...message.data(),
-          timestamp: message.data().timestamp?.toDate().getTime()
-        }}
-        />
+          key={message.id}
+          user={message.data().user}
+          message={{
+            ...message.data(),
+            timestamp: message.data().timestamp?.toDate().getTime()
+          }}
+          />
       ))
     } else {
       return JSON.parse(messages).map(message => {
@@ -48,6 +58,13 @@ function ChatScreen({ chat, messages }) {
           />
       })
     }
+  }
+
+  const scrollToBottom = () => {
+    endOfMessagesRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    }) 
   }
 
   const sendMessage = async (e) => {
@@ -73,14 +90,32 @@ function ChatScreen({ chat, messages }) {
     })
 
     setInput("")
+    scrollToBottom()
   }
+
+  const recipient = recipientSnapshot?.docs?.[0]?.data()
+  const recepientEmail = getRecipientEmail(chat.users, user.email)
   return (
     <Container>
       <Header>
-        <Avatar />
+        {
+          recipient ? (
+            <Avatar src={recipient?.photoURL} />
+          ) : (
+            <Avatar>{recepientEmail[0]}</Avatar>
+          )
+        }
         <HeaderInformation>
-          <h3>Recipient Email</h3>
-          <p>Last seen...</p>
+          <h3>{ recepientEmail }</h3>
+          {
+            recipientSnapshot ? (
+              <p>Last active: {' '}
+              {recipient?.lastSeen?.toDate() ? (
+                <TimeAgo datetime={recipient?.lastSeen?.toDate()} />
+              ): "Unavailable"}
+              </p>
+            ) : <p>Loading last active ...</p>
+          }
         </HeaderInformation>
         <HeaderIcons>
           <IconButton>
@@ -91,7 +126,7 @@ function ChatScreen({ chat, messages }) {
       </Header>
       <MessageContainer>
         {showMessages()}
-        <EndOfMessage />
+        <EndOfMessage ref={endOfMessagesRef} />
       </MessageContainer>
       <InputContainer>
         <InsertEmoticon />
@@ -144,7 +179,7 @@ min-height: 90vh
 `
 
 const EndOfMessage = styled.div`
-
+padding-bottom: 50px;
 `
 const InputContainer = styled.form`
   display: flex;
